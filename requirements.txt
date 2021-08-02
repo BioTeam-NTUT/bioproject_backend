@@ -1,10 +1,6 @@
-pytest
-coverage
+fastapi
+uvicorn
 python-dotenv
-watchdog
-blinker
-Flask
-flake8
 biopython
 ratelimit
 backoff
