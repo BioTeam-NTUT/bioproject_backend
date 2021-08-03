@@ -10,6 +10,7 @@
 
 from os import environ
 from os.path import abspath
+
 from dotenv import load_dotenv
 
 
@@ -22,7 +23,9 @@ class Config(object):
     OPENAPI_URL_PREFIX = "/api"
     OPENAPI_SWAGGER_UI_PATH = "/doc"
     OPENAPI_SWAGGER_UI_VERSION = "3.24.2"
-    OPENAPI_SWAGGER_UI_URL = "https://cdnjs.cloudflare.com/ajax/libs/swagger-ui/3.24.2/"
+    OPENAPI_SWAGGER_UI_URL = """
+        https://cdnjs.cloudflare.com/ajax/libs/swagger-ui/3.24.2/
+    """
 
     SECRET_KEY = None
     EMAIL_ADDRESS = None
@@ -30,25 +33,25 @@ class Config(object):
     LOG_PATH = None
 
     def __init__(self):
-        is_loaded = load_dotenv(".env")
+        is_loaded = load_dotenv("../../.env")
         if not is_loaded:
             raise FileNotFoundError(".env not found")
 
-        self.SECRET_KEY = environ.get('SECRET_KEY')
-        self.EMAIL_ADDRESS = environ.get('EMAIL_ADDRESS')
-        self.SENTRY_DSN = environ.get('SENTRY_DSN')
-        self.LOG_PATH = abspath(environ.get('LOG_PATH'))
+        self.SECRET_KEY = environ.get("SECRET_KEY")
+        self.EMAIL_ADDRESS = environ.get("EMAIL_ADDRESS")
+        self.SENTRY_DSN = environ.get("SENTRY_DSN")
+        self.LOG_PATH = abspath(environ.get("LOG_PATH"))
 
 
 class DevConfig(Config):
     """Development configuration."""
 
-    FLASK_ENV = 'dev'
+    FLASK_ENV = "dev"
     DEBUG = True
 
 
 class ProdConfig(Config):
     """Development configuration."""
 
-    FLASK_ENV = 'prod'
+    FLASK_ENV = "prod"
     DEBUG = False
