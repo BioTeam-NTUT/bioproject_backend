@@ -13,12 +13,26 @@ services:
       - "25672:25672"
       - "15672:15672"
 
+  postgresql:
+    image: "postgres:13-alpine"
+    container_name: "postgresql"
+    hostname: "postgresql"
+    restart: "always"
+    environment:
+      - POSTGRES_DB=bio_db
+      - POSTGRES_USER=biolab
+      - POSTGRES_PASSWORD=biolab
+    volumes:
+      - "postgresql_data:/var/lib/postgresql/data"
+    ports:
+      - "5432:5432"
+
   redis:
     image: "redis:6.2-alpine"
     container_name: "redis"
     hostname: "redis"
-    environment:
-      - REDIS_PASSWORD=dev1234
+    restart: "always"
+    command: "redis-server --requirepass 'biolab'"
     volumes:
       - "redis_data:/data"
     ports:
@@ -28,6 +42,7 @@ services:
     image: "gregsi/latest-celery-flower-docker:latest"
     container_name: "celery-flower"
     hostname: "celery-flower"
+    restart: "always"
     environment:
       - AMQP_USERNAME=guest
       - AMQP_PASSWORD=guest
@@ -51,3 +66,6 @@ volumes:
   redis_data:
     driver: "local"
     name: "redis_data"
+  postgresql_data:
+    driver: "local"
+    name: "postgresql_data"
