@@ -1,6 +1,8 @@
 import uvicorn
 from fastapi import FastAPI
+from fastapi.responses import JSONResponse
 from sentry_sdk.integrations.asgi import SentryAsgiMiddleware
+from starlette.exceptions import HTTPException as StarletteHTTPException
 from starlette.middleware.cors import CORSMiddleware
 
 from app.api.v1.api import api_v1
@@ -11,6 +13,14 @@ set_up_sentry()
 app = FastAPI(
     title=settings.PROJECT_NAME, openapi_url=f"{settings.API_V1_PREFIX}/openapi.json"
 )
+
+
+@app.exception_handler(StarletteHTTPException)
+async def http_exception_handler(request, exc):
+    return JSONResponse(
+        content={"code": exc.status_code, "message": exc.detail},
+        status_code=exc.status_code,
+    )
 
 
 # Set all CORS enabled origins

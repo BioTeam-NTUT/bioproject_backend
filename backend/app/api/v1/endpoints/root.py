@@ -15,12 +15,12 @@ from app import schemas, worker
 router = APIRouter()
 
 
-@router.post("/submit", response_model=schemas.SimpleResponse)
+@router.post("/analysis_submit", response_model=schemas.SimpleResponse)
 async def submit(args: schemas.FormArgs):
-    return {"msg": args.json()}
+    return {"message": args.json()}
 
 
 @router.get("/test_celery", response_model=schemas.SimpleResponse)
 async def test_celery():
     task = worker.test_celery.apply_async(("hello",), queue="main-queue")
-    return {"msg": task.get()}
+    return {"message": task.get()}
