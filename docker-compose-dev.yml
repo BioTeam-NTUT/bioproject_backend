@@ -1,63 +1,113 @@
 version: "3.8"
 
 services:
+  worker:
+    build:
+      context: "."
+    container_name: "worker"
+    env_file:
+      - ".env"
+      - "worker.env"
+    depends_on:
+      - "rabbitmq"
+      - "redis"
+      - "postgresql"
+    command: bash -c "sh worker_start.sh"
+    restart: "${DOCKER_RESTART_POLICY:-unless-stopped}"
+    stop_grace_period: "${DOCKER_STOP_GRACE_PERIOD:-3s}"
+    volumes:
+      - "${WORKER_LOG_PATH:-./logs/workers}:/logs"
+    networks:
+      - bionet
+
   rabbitmq:
+    env_file:
+      - ".env"
     image: "rabbitmq:3.9-management-alpine"
     container_name: "rabbitmq"
-    hostname: "rabbitmq"
+    hostname: "${RABBITMQ_SERVER:-rabbitmq}"
+    restart: "${DOCKER_RESTART_POLICY:-unless-stopped}"
+    stop_grace_period: "${DOCKER_STOP_GRACE_PERIOD:-3s}"
+    environment:
+      - RABBITMQ_DEFAULT_USER=${RABBITMQ_USER:-guest}
+      - RABBITMQ_DEFAULT_PASS=${RABBITMQ_PASSWORD:-guest}
     volumes:
       - "rabbitmq_data:/var/lib/rabbitmq"
     ports:
       - "4369:4369"
-      - "5672:5672"
+      - "8080:5672"
       - "25672:25672"
       - "15672:15672"
+    networks:
+      - bionet
 
   postgresql:
+    env_file:
+      - ".env"
     image: "postgres:13-alpine"
     container_name: "postgresql"
-    hostname: "postgresql"
-    restart: "always"
+    hostname: "${POSTGRES_SERVER:-postgresql}"
+    restart: "${DOCKER_RESTART_POLICY:-unless-stopped}"
+    stop_grace_period: "${DOCKER_STOP_GRACE_PERIOD:-3s}"
     environment:
-      - POSTGRES_DB=bio_db
-      - POSTGRES_USER=biolab
-      - POSTGRES_PASSWORD=biolab
+      - POSTGRES_DB=${POSTGRES_DB:-test}
+      - POSTGRES_USER=${POSTGRES_USER:-guest}
+      - POSTGRES_PASSWORD=${POSTGRES_PASSWORD:-guest}
     volumes:
       - "postgresql_data:/var/lib/postgresql/data"
     ports:
-      - "5432:5432"
+      - "4200:5432"
+    networks:
+      - bionet
 
   redis:
     image: "redis:6.2-alpine"
+    sysctls:
+      net.core.somaxconn: 1024
+      # vm.overcommit_memory: 1
     container_name: "redis"
-    hostname: "redis"
-    restart: "always"
-    command: "redis-server --requirepass 'biolab'"
+    hostname: "${REDIS_SERVER:-redis}"
+    env_file:
+      - ".env"
+    command: redis-server --requirepass '${REDIS_PASSWORD}'
+    restart: "${DOCKER_RESTART_POLICY:-unless-stopped}"
+    stop_grace_period: "${DOCKER_STOP_GRACE_PERIOD:-3s}"
     volumes:
       - "redis_data:/data"
+      - "./configs/redis/redis.conf:/etc/redis/redis.conf:ro"
     ports:
       - "6379:6379"
+    networks:
+      - bionet
 
   celery-flower:
     image: "gregsi/latest-celery-flower-docker:latest"
     container_name: "celery-flower"
     hostname: "celery-flower"
-    restart: "always"
+    env_file:
+      - ".env"
+    restart: "${DOCKER_RESTART_POLICY:-unless-stopped}"
     environment:
-      - AMQP_USERNAME=guest
-      - AMQP_PASSWORD=guest
-      - AMQP_ADMIN_USERNAME=guest
-      - AMQP_ADMIN_PASSWORD=guest
-      - AMQP_HOST=rabbitmq
-      - AMQP_PORT=5672
-      - AMQP_ADMIN_HOST=rabbitmq
-      - AMQP_ADMIN_PORT=15672
-      - FLOWER_BASIC_AUTH=user:test
+      - AMQP_USERNAME=${RABBITMQ_USER:-guest}
+      - AMQP_PASSWORD=${RABBITMQ_PASSWORD:-guest}
+      - AMQP_ADMIN_USERNAME=${RABBITMQ_USER:-guest}
+      - AMQP_ADMIN_PASSWORD=${RABBITMQ_PASSWORD:-guest}
+      - AMQP_HOST=${RABBITMQ_SERVER:-rabbitmq}
+      - AMQP_PORT=${RABBITMQ_PORT:-5672}
+      - AMQP_ADMIN_HOST=${RABBITMQ_SERVER:-rabbitmq}
+      - AMQP_ADMIN_PORT=${RABBITMQ_ADMIN_PORT:-15672}
+      - FLOWER_BASIC_AUTH=${CELERY_FLOWER_USER:-user}:${CELERY_FLOWER_PASSWORD:-test}
     ports:
-      - "5555:5555"
+      - "8081:5555"
     depends_on:
       - rabbitmq
       - redis
+    networks:
+      - bionet
+
+networks:
+  bionet:
+    driver: bridge
 
 volumes:
   rabbitmq_data:

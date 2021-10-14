@@ -10,7 +10,8 @@
 
 from celery import Celery
 
-from app.core.config import settings
+# Both web and worker use this script for setting celery client
+from app.core.configs.config import settings
 
 celery_app = Celery(
     main="worker", backend=settings.REDIS_URI, broker=settings.RABBITMQ_URI

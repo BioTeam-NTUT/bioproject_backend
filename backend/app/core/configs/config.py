@@ -9,30 +9,16 @@
 """
 
 import secrets
-from typing import Any, Dict, List, Optional, Union
+from typing import Any, Dict, Optional
 
-from pydantic import (
-    AnyHttpUrl,
-    BaseSettings,
-    EmailStr,
-    HttpUrl,
-    PostgresDsn,
-    RedisDsn,
-    validator,
-)
+from pydantic import BaseSettings, EmailStr, HttpUrl, PostgresDsn, RedisDsn, validator
 
 
 class Settings(BaseSettings):
     """Base configuration."""
 
-    PROJECT_NAME: str
-    API_V1_PREFIX: str = "/api/v1"
     SECRET_KEY: str = secrets.token_urlsafe(32)
-
-    # BACKEND_CORS_ORIGINS is a JSON-formatted list of origins
-    # e.g: '["http://localhost", "http://localhost:4200", "http://localhost:3000", \
-    # "http://localhost:8080", "http://local.dockertoolbox.tiangolo.com"]'
-    BACKEND_CORS_ORIGINS: List[AnyHttpUrl] = []
+    ENV: str = "production"
 
     EMAIL_ADDRESS: EmailStr
     SENTRY_DSN: HttpUrl
@@ -42,17 +28,23 @@ class Settings(BaseSettings):
     POSTGRES_USER: str
     POSTGRES_PASSWORD: str
     POSTGRES_DB: str
+    POSTGRES_PORT: str
     SQLALCHEMY_DATABASE_URI: Optional[PostgresDsn]
 
     REDIS_SERVER: str
     REDIS_PASSWORD: str
     REDIS_DB: str
+    REDIS_PORT: str
     REDIS_URI: Optional[RedisDsn]
 
     RABBITMQ_SERVER: str
     RABBITMQ_USER: str
     RABBITMQ_PASSWORD: str
+    RABBITMQ_PORT: str
     RABBITMQ_URI: Optional[str]
+
+    def is_development_enabled(self):
+        return self.ENV.lower() == "development"
 
     @validator("SQLALCHEMY_DATABASE_URI", pre=True)
     def assemble_db_connection(cls, v: Optional[str], values: Dict[str, Any]) -> Any:
@@ -63,6 +55,7 @@ class Settings(BaseSettings):
             user=values.get("POSTGRES_USER"),
             password=values.get("POSTGRES_PASSWORD"),
             host=values.get("POSTGRES_SERVER"),
+            port=values.get("POSTGRES_PORT"),
             path=f"/{values.get('POSTGRES_DB')}",
         )
 
@@ -74,6 +67,7 @@ class Settings(BaseSettings):
             scheme="redis",
             password=values.get("REDIS_PASSWORD"),
             host=values.get("REDIS_SERVER"),
+            port=values.get("REDIS_PORT"),
             path=f"/{values.get('REDIS_DB')}",
         )
 
@@ -81,15 +75,10 @@ class Settings(BaseSettings):
     def assemble_rabbitmq_uri(cls, v: Optional[str], values: Dict[str, Any]) -> str:
         if isinstance(v, str):
             return v
-        return f"amqp://{values.get('RABBITMQ_USER')}:{values.get('RABBITMQ_PASSWORD')}@{values.get('RABBITMQ_SERVER')}:5672//"  # noqa: E501
+        return f"amqp://{values.get('RABBITMQ_USER')}:{values.get('RABBITMQ_PASSWORD')}@{values.get('RABBITMQ_SERVER')}:{values.get('RABBITMQ_PORT')}//"  # noqa: E501
 
-    @validator("BACKEND_CORS_ORIGINS", pre=True)
-    def assemble_cors_origins(cls, v: Union[str, List[str]]) -> Union[str, List[str]]:
-        if isinstance(v, str) and not v.startswith("["):
-            return [i.strip() for i in v.split(",")]
-        elif isinstance(v, (list, str)):
-            return v
-        raise ValueError(v)
+    class Config:
+        env_file = ".env"
 
 
 settings = Settings()

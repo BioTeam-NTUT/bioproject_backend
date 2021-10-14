@@ -11,7 +11,7 @@ from typing import Any, List, Optional
 
 import sentry_sdk
 
-from app.core.config import settings
+from app.core.configs.web_config import settings
 
 
 def set_up_sentry(integrations: Optional[List[Any]] = None):
