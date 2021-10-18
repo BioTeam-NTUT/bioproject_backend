@@ -1,7 +1,7 @@
 import re
 
-UNIPROT_ACCESSION_NUMBER_FORMAT = r"[OPQ][0-9][A-Z0-9]{3}[0-9]|[A-NR-Z][0-9]([A-Z][A-Z0-9]{2}[0-9]){1,2}"  # noqa: E501
-GENBANK_ACCESSION_NUMBER_FORMAT = r"[A-Z]{3}([0-9]{5}|[0-9]{7})"
+UNIPROT_ACCESSION_NUMBER_FORMAT = r"^([A-N,R-Z][0-9]([A-Z][A-Z,0-9][A-Z,0-9][0-9]){1,2})|([O,P,Q][0-9][A-Z,0-9][A-Z,0-9][A-Z,0-9][0-9])(\.\d+)?$"  # noqa: E501
+GENBANK_ACCESSION_NUMBER_FORMAT = r"^([A-Za-z0-9]+\d+(\.\d+)?)|((N|X|W|A)P_\d+)$"
 
 
 def is_fasta_format(v: str) -> bool:
@@ -14,6 +14,6 @@ def is_protein_sequence_format(v: str) -> bool:
 
 def is_accession_format(v: str) -> bool:
     return (
-        re.fullmatch(GENBANK_ACCESSION_NUMBER_FORMAT, v.upper()) is not None
-        or re.fullmatch(UNIPROT_ACCESSION_NUMBER_FORMAT, v.upper()) is not None
+        re.fullmatch(GENBANK_ACCESSION_NUMBER_FORMAT, v) is not None
+        or re.fullmatch(UNIPROT_ACCESSION_NUMBER_FORMAT, v) is not None
     )
