@@ -11,7 +11,13 @@
 import secrets
 from typing import Any, Dict, Optional
 
-from pydantic import BaseSettings, EmailStr, HttpUrl, PostgresDsn, RedisDsn, validator
+from pydantic import (
+    BaseSettings,
+    EmailStr,
+    PostgresDsn,
+    RedisDsn,
+    validator,
+)
 
 
 class Settings(BaseSettings):
@@ -21,7 +27,6 @@ class Settings(BaseSettings):
     ENV: str = "production"
 
     EMAIL_ADDRESS: EmailStr
-    SENTRY_DSN: HttpUrl
     TRACE_SAMPLE_RATE: float = 1.0
 
     POSTGRES_SERVER: str
@@ -47,7 +52,9 @@ class Settings(BaseSettings):
         return self.ENV.lower() == "development"
 
     @validator("SQLALCHEMY_DATABASE_URI", pre=True)
-    def assemble_db_connection(cls, v: Optional[str], values: Dict[str, Any]) -> Any:
+    def assemble_db_connection(
+        cls, v: Optional[str], values: Dict[str, Any]
+    ) -> Any:
         if isinstance(v, str):
             return v
         return PostgresDsn.build(
@@ -60,7 +67,9 @@ class Settings(BaseSettings):
         )
 
     @validator("REDIS_URI", pre=True)
-    def assemble_redis_uri(cls, v: Optional[str], values: Dict[str, Any]) -> Any:
+    def assemble_redis_uri(
+        cls, v: Optional[str], values: Dict[str, Any]
+    ) -> Any:
         if isinstance(v, str):
             return v
         return RedisDsn.build(
@@ -72,7 +81,9 @@ class Settings(BaseSettings):
         )
 
     @validator("RABBITMQ_URI", pre=True)
-    def assemble_rabbitmq_uri(cls, v: Optional[str], values: Dict[str, Any]) -> str:
+    def assemble_rabbitmq_uri(
+        cls, v: Optional[str], values: Dict[str, Any]
+    ) -> str:
         if isinstance(v, str):
             return v
         return f"amqp://{values.get('RABBITMQ_USER')}:{values.get('RABBITMQ_PASSWORD')}@{values.get('RABBITMQ_SERVER')}:{values.get('RABBITMQ_PORT')}//"  # noqa: E501
