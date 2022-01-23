@@ -1,0 +1,4 @@
+﻿requests
+biopython
+ipykernel
+xmltramp2
