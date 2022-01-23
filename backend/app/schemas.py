@@ -13,7 +13,11 @@ from typing import Any, Dict, Optional
 
 from pydantic import BaseModel, EmailStr, Field, validator
 
-from app.helpers import is_accession_format, is_fasta_format, is_protein_sequence_format
+from app.helpers import (
+    is_accession_format,
+    is_fasta_format,
+    is_protein_sequence_format,
+)
 
 
 class LEVoting(BaseModel):
@@ -36,21 +40,25 @@ class FormArgs(BaseModel):
     )
     email: Optional[EmailStr] = Field(None, description="Email address")
     makeTaxonomy: bool = Field(description="Make taxonomy tree")
-    leVote: LEVoting = Field(description="Linear Epitope Voting System parameters")
+    leVote: LEVoting = Field(
+        description="Linear Epitope Voting System parameters"
+    )
     hostTaxonId: str = Field(description="Host taxonomy ID for analysis")
 
     @validator("data")
-    def check_data_format(cls, v: str, values: Dict[str, Any]):
+    def check_data_format(cls, v: str, values: Dict[str, Any]) -> None:
         data_type: DataType = DataType(values.get("type"))
         if data_type is DataType.fasta and not is_fasta_format(v):
             raise ValueError("Incorrect fasta format.")
-        elif data_type is DataType.sequence and not is_protein_sequence_format(v):
+        elif data_type is DataType.sequence and not is_protein_sequence_format(
+            v
+        ):
             raise ValueError("Incorrect bare protein sequence format.")
         elif data_type is DataType.accession and not is_accession_format(v):
             raise ValueError("Incorrect accession number format.")
 
     @validator("hostTaxonId")
-    def check_taxonomy_id_format(cls, v: str):
+    def check_taxonomy_id_format(cls, v: str) -> str:
         if re.fullmatch(r"^[A-Za-z0-9]+$", v) is None:
             raise ValueError("Incorrect taxonomy ID format.")
         return v
