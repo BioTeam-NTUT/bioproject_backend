@@ -1,0 +1,30 @@
+[tool.poetry]
+name = "bioproject_backend"
+version = "0.2.0"
+description = "A protein analysis platform"
+authors = ["guyleaf <leaf.ying.work@gmail.com>"]
+
+[tool.poetry.dependencies]
+python = "^3.9"
+fastapi = "^0.72.0"
+uvicorn = "^0.17.0"
+python-dotenv = "^0.19.0"
+biopython = "^1.79"
+alembic = "^1.7.5"
+celery = { extras = ["redis"], version = "^5.2.3" }
+pydantic = { extras = ["email"], version = "^1.9.0" }
+pyrabbit = "^1.1.0"
+ujson = "^5.1.0"
+python-multipart = "^0.0.5"
+
+[tool.poetry.dev-dependencies]
+pytest = "^6.2.5"
+pytest-cov = "^3.0.0"
+flake8 = "^4.0.1"
+mypy = "^0.931"
+isort = "^5.10.1"
+black = "^21.12b0"
+
+[build-system]
+requires = ["poetry-core>=1.0.0"]
+build-backend = "poetry.core.masonry.api"

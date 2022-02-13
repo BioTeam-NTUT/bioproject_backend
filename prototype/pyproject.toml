@@ -1,0 +1,20 @@
+[tool.poetry]
+name = "bioproject_backend_samples"
+version = "0.1.0"
+description = ""
+authors = ["guyleaf <leaf.ying.work@gmail.com>"]
+
+[tool.poetry.dependencies]
+python = "^3.9"
+requests = "^2.27.1"
+biopython = "^1.79"
+xmltramp2 = "^3.1.1"
+backoff = "^1.11.1"
+
+[tool.poetry.dev-dependencies]
+ipykernel = "^6.8.0"
+flake8 = "^4.0.1"
+
+[build-system]
+requires = ["poetry-core>=1.0.0"]
+build-backend = "poetry.core.masonry.api"
