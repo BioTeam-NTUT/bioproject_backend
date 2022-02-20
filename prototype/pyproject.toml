@@ -7,9 +7,10 @@ authors = ["guyleaf <leaf.ying.work@gmail.com>"]
 [tool.poetry.dependencies]
 python = "^3.9"
 requests = "^2.27.1"
-biopython = "^1.79"
 xmltramp2 = "^3.1.1"
 backoff = "^1.11.1"
+bioservices = "^1.8.3"
+biopython = "^1.79"
 
 [tool.poetry.dev-dependencies]
 ipykernel = "^6.8.0"
