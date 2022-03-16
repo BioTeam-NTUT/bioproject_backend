@@ -6,23 +6,29 @@ from SearchAccession import SearchAccession
 
 import ssl
 
-class MainSearch():
+
+class MainSearch:
     def __init__(self):
         ssl._create_default_https_context = ssl._create_unverified_context
         self.search = SearchPubMed()
         self.searchTaxon = SearchTaxonomy()
         self.searchName = SearchCommonName()
         self.searchAccession = SearchAccession()
+
     def GetAncestor(self, targetID):
         genusDictionary = {}
         # targetID = 99486
         family = self.searchTaxon.GetFamily(targetID)
-        genus = self.searchTaxon.GetChild(self.searchTaxon.GetTaxID(family), "genus")
+        genus = self.searchTaxon.GetChild(
+            self.searchTaxon.GetTaxID(family), "genus"
+        )
         start = time.time()
         data = []
         for child in genus:
             genusDictionary[child] = {}
-            result = self.searchTaxon.GetChild(self.searchTaxon.GetTaxID(child), "species")
+            result = self.searchTaxon.GetChild(
+                self.searchTaxon.GetTaxID(child), "species"
+            )
             for specie in result:
                 genusDictionary[child][specie] = {}
             data.append(result)
@@ -32,8 +38,8 @@ class MainSearch():
 
     def isMatchHost(self, keywordsA, keywordsB):
         searchRelation = self.search.search(keywordsA, keywordsB)
-        print("number of related paper: %d" %len(searchRelation))
-        if(len(searchRelation) > 0):
+        print("number of related paper: %d" % len(searchRelation))
+        if len(searchRelation) > 0:
             return True
         else:
             return False
@@ -47,20 +53,32 @@ class MainSearch():
         commonName = self.searchName.getCommonName(hostGenus)
         for genusKey in genusDictionary:
             for speciesKey in genusDictionary[genusKey]:
-                if(commonName != None and self.isMatchHost([speciesKey], [hostGenus, commonName]) or self.isMatchHost([speciesKey], [hostGenus])):
-                    speciesChild = self.searchTaxon.GetChild(self.searchTaxon.GetTaxID(speciesKey), "")
-                    if(len(speciesChild) == 0):
+                if (
+                    commonName != None
+                    and self.isMatchHost([speciesKey], [hostGenus, commonName])
+                    or self.isMatchHost([speciesKey], [hostGenus])
+                ):
+                    speciesChild = self.searchTaxon.GetChild(
+                        self.searchTaxon.GetTaxID(speciesKey), ""
+                    )
+                    if len(speciesChild) == 0:
                         result = [speciesKey]
                     else:
                         result = speciesChild
 
                     for organism in result:
-                        if(len(organism) >= 50):
+                        if len(organism) >= 50:
                             continue
                         if self.searchAccession.Run(organism, True) == 0:
                             self.searchAccession.Run(organism, False)
-                        organismKey = str(self.searchTaxon.GetTaxID(organism)) + "_" + organism
+                        organismKey = (
+                            str(self.searchTaxon.GetTaxID(organism))
+                            + "_"
+                            + organism
+                        )
                         accession = self.searchAccession.GetAccession()
-                        if(accession != None):
-                            genusDictionary[genusKey][speciesKey][organismKey] = accession
+                        if accession != None:
+                            genusDictionary[genusKey][speciesKey][
+                                organismKey
+                            ] = accession
         return genusDictionary

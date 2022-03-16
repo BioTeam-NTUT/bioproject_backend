@@ -1,18 +1,19 @@
 from Bio import Entrez
 
-class SearchPubMed():
+
+class SearchPubMed:
     def __init__(self):
         self.email = "test@example.com"
-    
-    def search(self, SpeciesList, BacterialOrVirusList):       
+
+    def search(self, SpeciesList, BacterialOrVirusList):
         searchList = []
         idList = self.getIdList(SpeciesList, BacterialOrVirusList)
-        if(len(idList) != 0):
+        if len(idList) != 0:
             summaryList = self.getSummaryList(idList)
             for summary in summaryList:
                 searchList.append(self.getTitleAndUrl(summary))
         return searchList
-    
+
     def getSummaryList(self, idList):
         idString = ""
         for id in idList:
@@ -47,7 +48,7 @@ class SearchPubMed():
                 bacterialOrVirus = "{} OR {}".format(bacterialOrVirus, element)
         # print(bacterialOrVirus)
         return "(({}) AND ({}))".format(species, bacterialOrVirus)
-    
+
     def getIdList(self, SpeciesList, BacterialOrVirusList):
         keyword = self.getKeyword(SpeciesList, BacterialOrVirusList)
         Entrez.email = self.email
@@ -55,5 +56,5 @@ class SearchPubMed():
         record = Entrez.read(handle)
         return record["IdList"]
 
-    def SetEmail(self, email):          
+    def SetEmail(self, email):
         self.email = email

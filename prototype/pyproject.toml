@@ -1,5 +1,5 @@
 [tool.poetry]
-name = "bioproject_backend_samples"
+name = "bioproject_backend_prototype"
 version = "0.1.0"
 description = ""
 authors = ["guyleaf <leaf.ying.work@gmail.com>"]
