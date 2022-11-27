@@ -321,7 +321,7 @@ if options.maxJobs:
 # Debug print
 def printDebugMessage(functionName, message, level):
     if level <= debugLevel:
-        print(u"[" + functionName + u"] " + message, file=sys.stderr)
+        print(u"[" + functionName + u"] " + message)
 
 
 # User-agent for request (see RFC2616).
@@ -468,8 +468,10 @@ def serviceRun(email, title, params):
         jobId = unicode(reqH.read(), u"utf-8")
         reqH.close()
     except HTTPError as ex:
-        print(xmltramp.parse(unicode(ex.read(), u"utf-8"))[0][0])
-        quit()
+        print(
+            xmltramp.parse(unicode(ex.read(), u"utf-8"))[0][0], file=sys.stderr
+        )
+        sys.exit(1)
     printDebugMessage(u"serviceRun", u"jobId: " + jobId, 2)
     printDebugMessage(u"serviceRun", u"End", 1)
     return jobId
@@ -494,10 +496,10 @@ def multipleServiceRun(email, title, params, useSeqId, maxJobs, outputLevel):
                     if useSeqId:
                         print("Submitting job for: %s" % str(seq.split()[0]))
                     else:
-                        print("JobId: " + jobId, file=sys.stderr)
+                        print("JobId: " + jobId)
         for k, jobId in enumerate(jobs[:]):
             if outputLevel > 0:
-                print("JobId: " + jobId, file=sys.stderr)
+                print("JobId: " + jobId)
             else:
                 print(jobId)
             if useSeqId:
@@ -625,20 +627,10 @@ def getResult(jobId):
         # Derive the filename for the result
         if options.outfile:
             filename = (
-                options.outfile
-                + u"."
-                + unicode(resultType[u"identifier"])
-                + u"."
-                + unicode(resultType[u"fileSuffix"])
+                options.outfile + u"." + unicode(resultType[u"fileSuffix"])
             )
         else:
-            filename = (
-                jobId
-                + u"."
-                + unicode(resultType[u"identifier"])
-                + u"."
-                + unicode(resultType[u"fileSuffix"])
-            )
+            filename = jobId + u"." + unicode(resultType[u"fileSuffix"])
         # Write a result file
 
         outformat_parm = str(options.outformat).split(",")
@@ -1006,7 +998,7 @@ elif options.email and not options.jobid:
         else:
             # Sync mode
             if outputLevel > 0:
-                print("JobId: " + jobId, file=sys.stderr)
+                print("JobId: " + jobId)
             else:
                 print(jobId)
             time.sleep(pollFreq)
@@ -1021,9 +1013,10 @@ elif options.jobid and (options.resultTypes or options.polljob):
     if status == "PENDING" or status == "RUNNING":
         print(
             "Error: Job status is %s. "
-            "To get result types the job must be finished." % status
+            "To get result types the job must be finished." % status,
+            file=sys.stderr,
         )
-        quit()
+        sys.exit(1)
     # List result types for job
     if options.resultTypes:
         printGetResultTypes(options.jobid)
